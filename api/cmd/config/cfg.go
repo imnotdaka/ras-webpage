@@ -1,5 +1,11 @@
 package config
 
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
+
 type Config struct {
 	DB DB
 }
@@ -13,12 +19,18 @@ type DB struct {
 }
 
 func NewConfig() (*Config, error) {
+	dir := "./cmd/config/.env"
+	err := godotenv.Load(dir)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := &Config{}
-	cfg.DB.User = "root"
-	cfg.DB.Password = "123"
-	cfg.DB.Database = "todoapp"
-	cfg.DB.Ip = "localhost"
-	cfg.DB.Port = "3306"
+	cfg.DB.User = os.Getenv("USERENV")
+	cfg.DB.Password = os.Getenv("PASSWORDENV")
+	cfg.DB.Database = os.Getenv("DATABASEENV")
+	cfg.DB.Ip = os.Getenv("IPENV")
+	cfg.DB.Port = os.Getenv("PORTENV")
 
 	return cfg, nil
 }
