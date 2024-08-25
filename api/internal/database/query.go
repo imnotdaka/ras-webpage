@@ -2,15 +2,15 @@ package database
 
 var (
 	CreateUserQuery = `
-	INSERT INTO user(name, dni, bday) VALUES (?, ?, ?)
+	INSERT INTO usersdb(name, dni, bday) VALUES (?, ?, ?)
 	`
 	GetUserByIDQuery = `
-	SELECT * FROM user WHERE id = ?
+	SELECT * FROM usersdb WHERE id = ?
 	`
 	UpdateUserByIdQuery = `
-	UPDATE user SET name=?, dni=?, bday=? WHERE id=?
+	UPDATE usersdb SET name=?, dni=?, bday=? WHERE id=?
 	`
 	DeleteUserByIDQuery = `
-	DELETE FROM user WHERE id=?
+	DELETE FROM usersdb WHERE id=?
 	`
 )
