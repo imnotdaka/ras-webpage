@@ -3,10 +3,7 @@ package user
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	"os"
 
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/imnotdaka/RAS-webpage/internal/database"
 )
 
@@ -30,7 +27,7 @@ func (r Repository) CreateUser(user User) (int64, error) {
 	return lastID, nil
 }
 
-func (r Repository) GetUserById(id string) (User, error) {
+func (r Repository) GetUserById(id int) (User, error) {
 	row := r.db.QueryRow(database.GetUserByIDQuery, id)
 	u := User{}
 	row.Scan(&u.ID, &u.Name, &u.DNI, &u.BDay)
@@ -55,14 +52,4 @@ func (r Repository) DeleteUser(id string) (string, error) {
 	}
 
 	return id, nil
-}
-
-func JWTValidation(tokenString string) (*jwt.Token, error) {
-	secret := os.Getenv("JWT_SECRET")
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
 }

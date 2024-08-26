@@ -3,15 +3,14 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 )
 
-func CreateUserHandler(r user.Repository) gin.HandlerFunc {
+func CreateUserHandler(r user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		var user user.User
@@ -25,7 +24,10 @@ func CreateUserHandler(r user.Repository) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
-		tokenString, err := createJWT(&user)
+
+		user.ID = int(res)
+
+		tokenString, err := auth.CreateJWT(&user)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
@@ -45,7 +47,11 @@ func GetUserHandler() gin.HandlerFunc {
 
 func GetUserByIdHandler(r user.Repository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.Param("id")
+		id, err := strconv.Atoi(ctx.Param("id"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
 		user, err := r.GetUserById(id)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
@@ -73,44 +79,29 @@ func DeleteUserHandler(r user.Repository) gin.HandlerFunc {
 	}
 }
 
-func createJWT(user *user.User) (string, error) {
-	claims := &jwt.MapClaims{
-		"ExpiresAt": jwt.NewNumericDate(time.Unix(1516239022, 0)),
-		"userID":    user.ID,
-	}
-	secret := os.Getenv("JWT_SECRET")
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	fmt.Println("JWT Created")
-	return token.SignedString([]byte(secret))
-}
-
-func WithJWTAuth(handlerfunc gin.HandlerFunc, s user.Repository) gin.HandlerFunc {
+func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Printf("JWT Auth")
 		tokenString := ctx.GetHeader("x-jwt-token")
-		token, err := user.JWTValidation(tokenString)
+		userID, err := strconv.Atoi(ctx.Param("id"))
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, "err validation")
 			return
 		}
-		if !token.Valid {
-			ctx.JSON(http.StatusInternalServerError, "!token.valid")
-			return
+
+		if tokenString != "" {
+			err := auth.VerifyJWT(tokenString, userID)
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, "err validation")
+				return
+			}
 		}
 
-		userID := ctx.Param("id")
 		user, err := s.GetUserById(userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
-		if user.ID != claims["userID"] {
-			ctx.JSON(http.StatusInternalServerError, err)
-			return
-		}
-
-		ctx.JSON(http.StatusOK, "OK")
+		ctx.JSON(http.StatusOK, user)
 	}
 }

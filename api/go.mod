@@ -4,13 +4,11 @@ go 1.22.2
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 )
 
-require (
-	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
-)
+require filippo.io/edwards25519 v1.1.0 // indirect
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect

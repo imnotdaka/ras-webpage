@@ -1,9 +1,12 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/imnotdaka/RAS-webpage/cmd/config"
 	"github.com/imnotdaka/RAS-webpage/internal/database"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/handlers"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 )
@@ -28,10 +31,13 @@ func run() error {
 		return err
 	}
 
+	JWT_SECRET := "JWT_SECRET"
+	auth := authenticator.NewAuth(os.Getenv(JWT_SECRET))
+
 	app := gin.New()
 
-	app.POST("/user", handlers.CreateUserHandler(user.NewRepo(db)))
-	app.GET("/user/:id", handlers.WithJWTAuth(handlers.GetUserByIdHandler(user.NewRepo(db)), user.NewRepo(db)))
+	app.POST("/user", handlers.CreateUserHandler(user.NewRepo(db), auth))
+	app.GET("/user/:id", handlers.Login(user.NewRepo(db), auth))
 	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 
