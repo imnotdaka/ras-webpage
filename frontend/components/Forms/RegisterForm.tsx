@@ -1,6 +1,7 @@
 export default function Register() {
     return (
-        <div className="max-w-lg mx-auto  bg-white dark:bg-gray-800 shadow-md px-8 py-4 flex flex-col items-center">
+        <div className="max-w-lg mx-auto  bg-white  dark:bg-gray-900 shadow-md px-8 py-1 flex flex-col items-center">
+            <div className="text-2xl text-gray-700 dark:text-gray-200 mr-2">Registro</div>
             <form action="#" className="w-full flex flex-col gap-2">
                 <div className="flex items-start flex-col justify-start">
                     <label htmlFor="firstName" className="text-sm text-gray-700 dark:text-gray-200 mr-2">Nombre</label>
@@ -13,8 +14,8 @@ export default function Register() {
                 </div>
 
                 <div className="flex items-start flex-col justify-start">
-                    <label htmlFor="username" className="text-sm text-gray-700 dark:text-gray-200 mr-2">DNI:</label>
-                    <input type="text" id="username" name="username" className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    <label htmlFor="dni" className="text-sm text-gray-700 dark:text-gray-200 mr-2">DNI:</label>
+                    <input type="text" id="dni" name="dni" className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
 
                 <div className="flex items-start flex-col justify-start">
