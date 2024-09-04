@@ -37,7 +37,7 @@ func run() error {
 	app := gin.New()
 
 	app.POST("/user", handlers.CreateUserHandler(user.NewRepo(db), auth))
-	app.GET("/user/:id", handlers.Login(user.NewRepo(db), auth))
+	app.POST("/auth/user", handlers.Login(user.NewRepo(db), auth))
 	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 

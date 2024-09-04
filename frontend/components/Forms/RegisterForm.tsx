@@ -38,7 +38,7 @@ export default function Register() {
 
             <div className="mt-4 text-center">
                 <span className="text-sm text-gray-500 dark:text-gray-300">Ya tenes una cuenta? </span>
-                <a href="./#" className="text-blue-500 hover:text-blue-600 text-sm">Iniciar sesión</a>
+                <a href="./login" className="text-blue-500 hover:text-blue-600 text-sm">Iniciar sesión</a>
             </div>
         </div >
     )

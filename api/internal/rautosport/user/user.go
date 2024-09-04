@@ -15,8 +15,8 @@ func NewRepo(db *sql.DB) Repository {
 	return Repository{db: db}
 }
 
-func (r Repository) CreateUser(user User) (int64, error) {
-	res, err := r.db.Exec(database.CreateUserQuery, user.Name, user.DNI, user.BDay)
+func (r Repository) CreateUser(user *User) (int64, error) {
+	res, err := r.db.Exec(database.CreateUserQuery, user.FirstName, user.LastName, user.Email, user.EncryptedPassword)
 	if err != nil {
 		return 0, err
 	}
@@ -27,10 +27,17 @@ func (r Repository) CreateUser(user User) (int64, error) {
 	return lastID, nil
 }
 
+func (r Repository) GetUserByEmail(email string) (User, error) {
+	row := r.db.QueryRow(database.GetUserByEmailQuery, email)
+	u := User{}
+	row.Scan(&u.ID, &u.EncryptedPassword)
+	return u, nil
+}
+
 func (r Repository) GetUserById(id int) (User, error) {
 	row := r.db.QueryRow(database.GetUserByIDQuery, id)
 	u := User{}
-	row.Scan(&u.ID, &u.Name, &u.DNI, &u.BDay)
+	row.Scan(&u.ID, &u.FirstName, &u.LastName)
 	return u, nil
 }
 
