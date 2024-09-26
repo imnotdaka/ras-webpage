@@ -8,7 +8,7 @@ var (
 	SELECT id, password FROM user WHERE email = ?
 	`
 	GetUserByIDQuery = `
-	SELECT * FROM user WHERE id = ?
+	SELECT firstname, lastname, email FROM user WHERE id = ?
 	`
 	UpdateUserByIdQuery = `
 	UPDATE user SET name=?, dni=?, email=?, bday=? WHERE id=?

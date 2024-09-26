@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/imnotdaka/RAS-webpage/internal/database"
 )
@@ -30,14 +31,21 @@ func (r Repository) CreateUser(user *User) (int64, error) {
 func (r Repository) GetUserByEmail(email string) (User, error) {
 	row := r.db.QueryRow(database.GetUserByEmailQuery, email)
 	u := User{}
-	row.Scan(&u.ID, &u.EncryptedPassword)
+	err := row.Scan(&u.ID, &u.EncryptedPassword)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return u, nil
 }
 
 func (r Repository) GetUserById(id int) (User, error) {
+	fmt.Println(id)
 	row := r.db.QueryRow(database.GetUserByIDQuery, id)
 	u := User{}
-	row.Scan(&u.ID, &u.FirstName, &u.LastName)
+	err := row.Scan(&u.FirstName, &u.LastName, &u.Email)
+	if err != nil {
+		return u, err
+	}
 	return u, nil
 }
 

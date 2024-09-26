@@ -1,7 +1,7 @@
 import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
     <div>
         <NavBar/>

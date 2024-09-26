@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	cors "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/imnotdaka/RAS-webpage/cmd/config"
 	"github.com/imnotdaka/RAS-webpage/internal/database"
@@ -36,8 +37,14 @@ func run() error {
 
 	app := gin.New()
 
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:5173"}
+	config.AllowCredentials = true
+	app.Use(cors.New(config))
+
 	app.POST("/user", handlers.CreateUserHandler(user.NewRepo(db), auth))
 	app.POST("/auth/user", handlers.Login(user.NewRepo(db), auth))
+	app.POST("/auth/jwt", handlers.JWTLogin(user.NewRepo(db), auth))
 	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 

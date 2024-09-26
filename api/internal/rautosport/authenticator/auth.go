@@ -17,7 +17,7 @@ var (
 
 type Authenticator interface {
 	CreateJWT(user *user.User) (string, error)
-	VerifyJWT(tokenString string) error
+	VerifyJWT(tokenString string) (*jwt.Token, error)
 }
 
 type authenticator struct {
@@ -38,7 +38,7 @@ func (a authenticator) CreateJWT(user *user.User) (string, error) {
 	return token.SignedString([]byte(a.secret))
 }
 
-func (a authenticator) VerifyJWT(tokenString string) error {
+func (a authenticator) VerifyJWT(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidSigningMethod
@@ -46,15 +46,15 @@ func (a authenticator) VerifyJWT(tokenString string) error {
 		return []byte(a.secret), nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !token.Valid {
-		return ErrTokenIsNotValid
+		return nil, ErrTokenIsNotValid
 	}
 
 	// claims := token.Claims.(jwt.MapClaims)
 	// if userID != int(claims["userID"].(float64)) {
 	// 	return ErrIsNotValid
 	// }
-	return nil
+	return token, nil
 }

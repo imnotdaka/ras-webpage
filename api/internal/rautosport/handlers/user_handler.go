@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 	"golang.org/x/crypto/bcrypt"
@@ -65,7 +66,7 @@ func CreateUserHandler(r user.Repository, auth authenticator.Authenticator) gin.
 		}
 
 		fmt.Println("JTW token: ", tokenString)
-
+		ctx.SetCookie("x-jwt-token", tokenString, 3600, "/", "localhost", false, false)
 		ctx.JSON(http.StatusOK, res)
 	}
 
@@ -112,6 +113,30 @@ func DeleteUserHandler(r user.Repository) gin.HandlerFunc {
 
 // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVzQXQiOjE1MTYyMzkwMjIsInVzZXJJRCI6MX0.6tLN16R78q98j3rt5oT_tavRAu3K0Qimz59tddPzuCw
 
+func JWTLogin(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token, err := ctx.Cookie("x-jwt-token")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, "no JWT cookie")
+			return
+		}
+		fmt.Println("token received", token)
+		parsedToken, err := auth.VerifyJWT(token)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		}
+
+		claims := parsedToken.Claims.(jwt.MapClaims)
+		userID := int(claims["userID"].(float64))
+		res, err := s.GetUserById(userID)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, res)
+	}
+}
+
 func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req user.LoginRequest
@@ -120,22 +145,21 @@ func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc 
 			fmt.Println(err)
 			ctx.JSON(http.StatusInternalServerError, "err valid")
 		}
-		tokenString := ctx.GetHeader("x-jwt-token")
-		// userID, err := strconv.Atoi(ctx.Param("id"))
+		// tokenString, err := ctx.Cookie("x-jwt-token")
 		// if err != nil {
-		// 	ctx.JSON(http.StatusInternalServerError, "err validation")
-		// 	return
+		// 	fmt.Println(err, "Cookie error")
+		// 	ctx.JSON(http.StatusInternalServerError, "token not found")
 		// }
 
-		if tokenString != "" {
-			err := auth.VerifyJWT(tokenString)
-			if err != nil {
-				fmt.Println(err)
-				ctx.JSON(http.StatusInternalServerError, "err validation")
-				return
-			}
-
-		}
+		// if tokenString != "" {
+		// 	err := auth.VerifyJWT(tokenString)
+		// 	if err != nil {
+		// 		fmt.Println(err)
+		// 		ctx.JSON(http.StatusInternalServerError, "token error")
+		// 		return
+		// 	}
+		// 	ctx.JSON(http.StatusOK, err)
+		// }
 
 		email := (req.Email)
 		user, err := s.GetUserByEmail(email)
@@ -150,6 +174,15 @@ func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc 
 			ctx.JSON(http.StatusBadRequest, ErrBadRequestPassword)
 			return
 		}
+		tokenString, err := auth.CreateJWT(&user)
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		fmt.Println("JTW token: ", tokenString)
+		ctx.SetCookie("x-jwt-token", tokenString, 3600, "/", "localhost", false, false)
 		ctx.JSON(http.StatusOK, user.ID)
 	}
 }
