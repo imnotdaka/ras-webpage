@@ -54,6 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const res = await jwtRequest({ "x-jwt-token": cookies["x-jwt-token"] })
 
                 if (!res.data) {
+                    console.log("error res", res)
                     setIsAuthenticated(false)
                     setLoading(false)
                     console.log(isAuthenticated, loading)
@@ -63,16 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.log("res:", res)
                 setIsAuthenticated(true)
                 setUser(res.data)
-                setLoading(false)
                 console.log(isAuthenticated, loading)
-                console.log("user", user)
 
             } catch (error) {
 
                 setIsAuthenticated(false)
                 setLoading(false)
                 console.log(isAuthenticated, loading)
-                console.log(error)
+                console.log("catch err:", error)
             }
 
         }
@@ -80,6 +79,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     }, [])
+    useEffect(() => {
+        if (user) {
+
+            setLoading(false)
+            console.log("user:", user)
+
+        }
+    }, [user])
 
     async function signup(user: FieldValues) {
         try {
