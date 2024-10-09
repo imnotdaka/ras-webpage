@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 cmd/config/.env
 *.env
+Makefile
+docker-compose.yml

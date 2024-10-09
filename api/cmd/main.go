@@ -6,6 +6,7 @@ import (
 	cors "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/imnotdaka/RAS-webpage/cmd/config"
+	"github.com/imnotdaka/RAS-webpage/internal/clients"
 	"github.com/imnotdaka/RAS-webpage/internal/database"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/handlers"
@@ -47,6 +48,13 @@ func run() error {
 	app.POST("/auth/jwt", handlers.JWTLogin(user.NewRepo(db), auth))
 	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
+
+	app.GET("/preapproval_plan", clients.CreatePlan())
+	app.GET("/create-order", clients.CreateOrder())
+	app.GET("/success", clients.Success())
+	app.GET("/pending", clients.Pending())
+	app.GET("/failure", clients.Failure())
+	app.GET("/webhook", clients.Webhook())
 
 	err = app.Run()
 	if err != nil {

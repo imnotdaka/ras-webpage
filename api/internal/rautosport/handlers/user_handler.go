@@ -111,8 +111,6 @@ func DeleteUserHandler(r user.Repository) gin.HandlerFunc {
 	}
 }
 
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFeHBpcmVzQXQiOjE1MTYyMzkwMjIsInVzZXJJRCI6MX0.6tLN16R78q98j3rt5oT_tavRAu3K0Qimz59tddPzuCw
-
 func JWTLogin(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token, err := ctx.Cookie("x-jwt-token")
