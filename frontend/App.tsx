@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import { AuthProvider } from './context/AuthContext'
 import HomePage from './pages/HomePage'
 import ProtectRoute from './ProtectRoute'
+import MembershipPage from './pages/MembershipPage'
 
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectRoute />} >
-            <Route path="/membership" element={<h1>Membership managment</h1>} />
+            <Route path="/membership" element={<MembershipPage/>} />
           </Route>
         </Routes>
       </BrowserRouter>

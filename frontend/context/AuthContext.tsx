@@ -33,8 +33,6 @@ async function jwtRequest(token: FieldValues) {
     return axios.post(`/auth/jwt`, token)
 }
 
-
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
