@@ -50,7 +50,8 @@ func run() error {
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 
 	app.GET("/preapproval_plan", clients.CreatePlan())
-	app.GET("/create-order", clients.CreateOrder())
+	app.GET("/get_plans", clients.GetPlan())
+	app.GET("/create_order", clients.CreateOrder())
 	app.GET("/success", clients.Success())
 	app.GET("/pending", clients.Pending())
 	app.GET("/failure", clients.Failure())

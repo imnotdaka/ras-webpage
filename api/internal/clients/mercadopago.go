@@ -34,7 +34,6 @@ type PreApprovalPlan struct {
 func CreatePlan() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		accessToken := os.Getenv("ACCESS_TOKEN")
-
 		var plan PreApprovalPlan
 
 		err := ctx.ShouldBindJSON(&plan)
@@ -91,6 +90,46 @@ func CreatePlan() gin.HandlerFunc {
 		fmt.Println("parsed res: ", &apiResponse)
 
 		ctx.JSON(http.StatusOK, "Pre-approval plan created successfully")
+	}
+}
+
+func GetPlan() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		accessToken := os.Getenv("ACCESS_TOKEN")
+		url := "https://api.mercadopago.com/preapproval_plan/search"
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+		}
+
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		res, err := client.Do(req)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		defer res.Body.Close()
+
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		var apiResponse map[string]interface{}
+		err = json.Unmarshal(resBody, &apiResponse)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		fmt.Println("parsed res: ", &apiResponse)
+		ctx.JSON(http.StatusOK, &apiResponse)
 	}
 }
 
