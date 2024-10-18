@@ -16,4 +16,11 @@ var (
 	DeleteUserByIDQuery = `
 	DELETE FROM user WHERE id=?
 	`
+
+	CreatePlanQuery = `
+	INSERT INTO plan(id, reason, frequency, frequency_type, transaction_amount) VALUES (?, ?, ?, ?, ?)
+	`
+	GetPlanQuery = `
+	SELECT * FROM plan
+	`
 )

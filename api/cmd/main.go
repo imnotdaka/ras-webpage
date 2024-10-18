@@ -10,6 +10,7 @@ import (
 	"github.com/imnotdaka/RAS-webpage/internal/database"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/handlers"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/plan"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 )
 
@@ -49,8 +50,8 @@ func run() error {
 	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
 	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 
-	app.GET("/preapproval_plan", clients.CreatePlan())
-	app.GET("/get_plans", clients.GetPlan())
+	app.POST("/preapproval_plan", clients.CreatePlan(plan.NewRepo(db)))
+	app.GET("/get_plans", clients.GetAll(plan.NewRepo(db)))
 	app.GET("/create_order", clients.CreateOrder())
 	app.GET("/success", clients.Success())
 	app.GET("/pending", clients.Pending())

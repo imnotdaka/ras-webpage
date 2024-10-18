@@ -9,15 +9,15 @@ import (
 )
 
 type Repository struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func NewRepo(db *sql.DB) Repository {
-	return Repository{db: db}
+	return Repository{DB: db}
 }
 
 func (r Repository) CreateUser(user *User) (int64, error) {
-	res, err := r.db.Exec(database.CreateUserQuery, user.FirstName, user.LastName, user.Email, user.EncryptedPassword)
+	res, err := r.DB.Exec(database.CreateUserQuery, user.FirstName, user.LastName, user.Email, user.EncryptedPassword)
 	if err != nil {
 		return 0, err
 	}
@@ -29,7 +29,7 @@ func (r Repository) CreateUser(user *User) (int64, error) {
 }
 
 func (r Repository) GetUserByEmail(email string) (User, error) {
-	row := r.db.QueryRow(database.GetUserByEmailQuery, email)
+	row := r.DB.QueryRow(database.GetUserByEmailQuery, email)
 	u := User{}
 	err := row.Scan(&u.ID, &u.EncryptedPassword)
 	if err != nil {
@@ -40,7 +40,7 @@ func (r Repository) GetUserByEmail(email string) (User, error) {
 
 func (r Repository) GetUserById(id int) (User, error) {
 	fmt.Println(id)
-	row := r.db.QueryRow(database.GetUserByIDQuery, id)
+	row := r.DB.QueryRow(database.GetUserByIDQuery, id)
 	u := User{}
 	err := row.Scan(&u.FirstName, &u.LastName, &u.Email)
 	if err != nil {
@@ -54,7 +54,7 @@ func (r Repository) UpdateUser() (any, error) {
 }
 
 func (r Repository) DeleteUser(id string) (string, error) {
-	res, err := r.db.Exec(database.DeleteUserByIDQuery, id)
+	res, err := r.DB.Exec(database.DeleteUserByIDQuery, id)
 	if err != nil {
 		return "", err
 	}
