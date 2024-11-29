@@ -27,3 +27,4 @@ cmd/config/.env
 Makefile
 docker-compose.yml
 api/cmd/config/env
+api/internal/ngrok/ngrok.go

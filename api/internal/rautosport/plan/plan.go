@@ -12,7 +12,7 @@ type repository struct {
 }
 
 type Repository interface {
-	CreatePlanDB(*string, *string, *int, *string, *int) (int64, error)
+	CreatePlanDB(string, string, int, string, float64) (int64, error)
 	GetAll() ([]PreApprovalPlan, error)
 }
 
@@ -20,7 +20,7 @@ func NewRepo(db *sql.DB) Repository {
 	return &repository{DB: db}
 }
 
-func (r repository) CreatePlanDB(id *string, reason *string, frequency *int, frequencyType *string, transactionAmount *int) (int64, error) {
+func (r repository) CreatePlanDB(id string, reason string, frequency int, frequencyType string, transactionAmount float64) (int64, error) {
 	res, err := r.DB.Exec(database.CreatePlanQuery, id, reason, frequency, frequencyType, transactionAmount)
 	if err != nil {
 		return 0, err

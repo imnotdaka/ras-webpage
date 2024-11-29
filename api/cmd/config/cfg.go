@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
-	DB DB
+	DB            DB
+	MPAccessToken string
+	JWTSecret     string
 }
 
 type DB struct {
@@ -31,6 +33,9 @@ func NewConfig() (*Config, error) {
 	cfg.DB.Database = os.Getenv("DATABASEENV")
 	cfg.DB.Ip = os.Getenv("IPENV")
 	cfg.DB.Port = os.Getenv("PORTENV")
+
+	cfg.JWTSecret = os.Getenv("JWT_SECRET")
+	cfg.MPAccessToken = os.Getenv("ACCESS_TOKEN")
 
 	return cfg, nil
 }
