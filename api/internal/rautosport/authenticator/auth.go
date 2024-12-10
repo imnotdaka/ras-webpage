@@ -2,7 +2,6 @@ package authenticator
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -34,7 +33,6 @@ func (a authenticator) CreateJWT(user *user.User) (string, error) {
 		"userID":    user.ID,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	fmt.Println("JWT Created", token)
 	return token.SignedString([]byte(a.secret))
 }
 

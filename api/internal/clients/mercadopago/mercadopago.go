@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -16,6 +17,8 @@ import (
 	"github.com/mercadopago/sdk-go/pkg/preapproval"
 	"github.com/mercadopago/sdk-go/pkg/preapprovalplan"
 )
+
+var ErrEmptyClient = errors.New("failed to initialize mp client")
 
 type client struct {
 	pap preapprovalplan.Client
@@ -41,7 +44,6 @@ func (c client) CreatePlan(ctx context.Context, req preapprovalplan.Request) (st
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("res:", res)
 	return res.ID, nil
 }
 
@@ -50,7 +52,6 @@ func (c client) CreateSuscription(ctx context.Context, req preapproval.Request) 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(res)
 	return res, nil
 }
 
@@ -61,7 +62,6 @@ func GetAll(r plan.Repository) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
-		fmt.Printf("%v+ \n", plan)
 		ctx.JSON(http.StatusOK, plan)
 	}
 }

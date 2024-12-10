@@ -2,25 +2,27 @@ package database
 
 var (
 	CreateUserQuery = `
-	INSERT INTO user(firstname, lastname, email, password) VALUES (?, ?, ?, ?)
+	INSERT INTO user(first_name, last_name, email, password) VALUES (?, ?, ?, ?)
 	`
 	GetUserByEmailQuery = `
 	SELECT id, password FROM user WHERE email = ?
 	`
 	GetUserByIDQuery = `
-	SELECT firstname, lastname, email FROM user WHERE id = ?
+	SELECT first_name, last_name, email FROM user WHERE id = ?
 	`
 	UpdateUserByIdQuery = `
-	UPDATE user SET name=?, dni=?, email=?, bday=? WHERE id=?
+	UPDATE user SET first_name=?, last_name=?, email=?, password=? WHERE id=?
 	`
 	DeleteUserByIDQuery = `
 	DELETE FROM user WHERE id=?
 	`
-
 	CreatePlanQuery = `
 	INSERT INTO plan(id, reason, frequency, frequency_type, transaction_amount) VALUES (?, ?, ?, ?, ?)
 	`
 	GetPlanQuery = `
 	SELECT * FROM plan
+	`
+	GetPlanByIdQuery = `
+	SELECT * FROM plan WHERE id=?
 	`
 )

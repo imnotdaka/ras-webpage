@@ -27,7 +27,7 @@ export default function Register() {
             })}>
                 <div className="flex items-start flex-col justify-start">
                     <label htmlFor="firstName" className="text-sm text-gray-700 dark:text-gray-200 mr-2">Nombre</label>
-                    <input type="text" id="firstName" className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" required {...register("first_name", { required: true })} />
+                    <input type="text" id="firstName" className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" {...register("first_name", { required: true })} />
                     {errors.first_name && (<p className="text-red-500">Nombre requerido</p>)}
                 </div>
 

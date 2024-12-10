@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -32,7 +33,7 @@ func CreateUserHandler(r user.Repository, auth authenticator.Authenticator) gin.
 		var req user.RegisterReq
 		err := ctx.ShouldBind(&req)
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("bad request error", "error", err)
 			ctx.JSON(http.StatusBadRequest, ErrBadRequestCreateUser)
 			return
 		}

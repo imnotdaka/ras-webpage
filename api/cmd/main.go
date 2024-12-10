@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
 	cors "github.com/gin-contrib/cors"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/imnotdaka/RAS-webpage/internal/clients/mercadopago"
 	"github.com/imnotdaka/RAS-webpage/internal/database"
-	"github.com/imnotdaka/RAS-webpage/internal/ngrok"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/handlers"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/plan"
@@ -27,6 +27,9 @@ func main() {
 
 func run() error {
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	cfg, err := config.NewConfig()
 	if err != nil {
 		return err
@@ -37,7 +40,14 @@ func run() error {
 		return err
 	}
 
-	mpclient := mercadopago.NewClient(&mpconfig.Config{AccessToken: cfg.MPAccessToken})
+	mpclient := mercadopago.NewClient(&mpconfig.Config{
+		AccessToken: cfg.MPAccessToken,
+		Requester:   cfg.HTTPClient,
+	})
+	if mpclient == nil {
+		slog.Info("failed to initialize MercadoPago client")
+		return mercadopago.ErrEmptyClient
+	}
 
 	auth := authenticator.NewAuth(os.Getenv(cfg.JWTSecret))
 
@@ -58,8 +68,6 @@ func run() error {
 	app.GET("/get_plans", mercadopago.GetAll(plan.NewRepo(db)))
 	app.POST("/create_suscription", handlers.CreateSuscriptionHandler(mpclient, plan.NewRepo(db)))
 	app.POST("/webhook", mercadopago.Webhook())
-
-	go ngrok.NgrokListener(&gin.Context{})
 
 	err = app.Run()
 	if err != nil {

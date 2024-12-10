@@ -49,21 +49,19 @@ func CreateSuscriptionHandler(c mercadopago.Client, r plan.Repository) gin.Handl
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
+		plan, err := r.GetPlanById(planTemp.PreapprovalPlanID)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
 
+		planTemp.AutoRecurring = plan.AutoRecurring
 		_, err = c.CreateSuscription(ctx, planTemp)
 		if err != nil {
 			fmt.Println(err)
 			ctx.JSON(http.StatusInternalServerError, internalServerErr)
 			return
 		}
-
-		// lastID, err := r.CreatePlanDB(id, planTemp.Reason, planTemp.AutoRecurring.Frequency, planTemp.AutoRecurring.FrequencyType, planTemp.AutoRecurring.TransactionAmount)
-		// if err != nil {
-		// 	ctx.JSON(http.StatusBadRequest, err)
-		// 	return
-		// }
-
-		// fmt.Println(lastID)
 
 	}
 }

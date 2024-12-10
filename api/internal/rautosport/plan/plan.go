@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/imnotdaka/RAS-webpage/internal/database"
+	"github.com/mercadopago/sdk-go/pkg/preapproval"
 )
 
 type repository struct {
@@ -14,6 +15,7 @@ type repository struct {
 type Repository interface {
 	CreatePlanDB(string, string, int, string, float64) (int64, error)
 	GetAll() ([]PreApprovalPlan, error)
+	GetPlanById(id string) (preapproval.Request, error)
 }
 
 func NewRepo(db *sql.DB) Repository {
@@ -48,4 +50,16 @@ func (r repository) GetAll() ([]PreApprovalPlan, error) {
 	}
 	fmt.Println(plans)
 	return plans, nil
+}
+
+func (r repository) GetPlanById(id string) (preapproval.Request, error) {
+	row := r.DB.QueryRow(database.GetPlanByIdQuery, id)
+	plan := preapproval.Request{}
+	autorecurring := preapproval.AutoRecurringRequest{}
+	err := row.Scan(&plan.PreapprovalPlanID, &plan.Reason, &autorecurring.Frequency, &autorecurring.FrequencyType, &autorecurring.TransactionAmount)
+	if err != nil {
+		return preapproval.Request{}, err
+	}
+	plan.AutoRecurring = &autorecurring
+	return plan, nil
 }
