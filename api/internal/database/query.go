@@ -25,4 +25,10 @@ var (
 	GetPlanByIdQuery = `
 	SELECT * FROM plan WHERE id=?
 	`
+	CreateSubscriptionQuery = `
+	INSERT INTO subscription(subscription_id, user_id, date_created, next_payment, plan_id, status) VALUES (?, ?, ?, ?, ?, ?)
+	`
+	UpdateSubscriptionQuery = `
+	UPDATE subscription SET subscription_id=?, user_id=?, date_created=?, next_payment=?, plan_id=?, status=? WHERE user_id=?
+	`
 )

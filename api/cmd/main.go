@@ -13,6 +13,7 @@ import (
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/handlers"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/plan"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/subscription"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 	mpconfig "github.com/mercadopago/sdk-go/pkg/config"
 )
@@ -51,23 +52,26 @@ func run() error {
 
 	auth := authenticator.NewAuth(os.Getenv(cfg.JWTSecret))
 
-	app := gin.New()
+	app := gin.Default()
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:5173"}
 	config.AllowCredentials = true
 	app.Use(cors.New(config))
 
+	authorizedRoutes := app.Group("/", handlers.JWTMiddleware(auth))
+
 	app.POST("/user", handlers.CreateUserHandler(user.NewRepo(db), auth))
 	app.POST("/auth/user", handlers.Login(user.NewRepo(db), auth))
-	app.POST("/auth/jwt", handlers.JWTLogin(user.NewRepo(db), auth))
-	app.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
-	app.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
+	authorizedRoutes.PUT("/user/:id", handlers.UpdateUserHandler(user.NewRepo(db)))
+	authorizedRoutes.DELETE("/user/:id", handlers.DeleteUserHandler(user.NewRepo(db)))
 
-	app.POST("/preapproval_plan", handlers.CreatePlanHandler(mpclient, plan.NewRepo(db)))
-	app.GET("/get_plans", mercadopago.GetAll(plan.NewRepo(db)))
-	app.POST("/create_suscription", handlers.CreateSuscriptionHandler(mpclient, plan.NewRepo(db)))
-	app.POST("/webhook", mercadopago.Webhook())
+	authorizedRoutes.POST("/preapproval_plan", handlers.CreatePlanHandler(mpclient, plan.NewRepo(db)))
+	authorizedRoutes.GET("/get_plans", handlers.GetAllPlanHandler(plan.NewRepo(db)))
+	authorizedRoutes.POST("/create_suscription", handlers.CreateSubscriptionHandler(mpclient, plan.NewRepo(db), subscription.NewRepo(db)))
+	authorizedRoutes.GET("/subscription/:id", handlers.GetSubscriptionHandler(mpclient))
+	authorizedRoutes.PUT("/subscription", handlers.UpdateMPSubscriptionHandler(mpclient))
+	app.POST("/webhook", handlers.Webhook(mpclient))
 
 	err = app.Run()
 	if err != nil {

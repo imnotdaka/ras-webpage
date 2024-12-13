@@ -6,11 +6,12 @@ import Cookies from "js-cookie"
 
 
 interface AuthContextType {
-    user: any;
     signup: (user: FieldValues) => Promise<void>;
     signin: (user: FieldValues) => Promise<void>;
     loading: boolean
     isAuthenticated: boolean
+    isModalOpen: boolean
+    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -34,9 +35,9 @@ async function jwtRequest(token: FieldValues) {
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     useEffect(() => {
         const jwtReq = async () => {
@@ -44,7 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (!cookies["x-jwt-token"]) {
                 setIsAuthenticated(false)
                 setLoading(false)
-                setUser(null)
                 return
             }
             try {
@@ -55,15 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     console.log("error res", res)
                     setIsAuthenticated(false)
                     setLoading(false)
-                    console.log(isAuthenticated, loading)
                     return
                 }
 
-                console.log("res:", res)
                 setIsAuthenticated(true)
-                setUser(res.data)
                 console.log("res.data:", res.data)
-                console.log(isAuthenticated, loading)
 
             } catch (error) {
 
@@ -78,20 +74,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     }, [])
-    useEffect(() => {
-        if (user) {
+    // useEffect(() => {
+    //     if (user) {
 
-            setLoading(false)
-            console.log("user:", user)
+    //         setLoading(false)
+    //         console.log("user:", user)
 
-        }
-    }, [user])
+    //     }
+    // }, [user])
 
     async function signup(user: FieldValues) {
         try {
-            const res = await registerRequest(user)
-            console.log(res)
-            setUser(res.data)
+            await registerRequest(user)
             setIsAuthenticated(true)
         }
         catch (error) {
@@ -101,9 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signin = async (user: FieldValues) => {
         try {
-            const res = await signinRequest(user)
-            console.log(res)
-            setUser(res.data)
+            await signinRequest(user)
             setIsAuthenticated(true)
         } catch (error) {
             console.log(error)
@@ -116,8 +108,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             signup,
             signin,
             loading,
-            user,
             isAuthenticated,
+            isModalOpen,
+            setIsModalOpen
         }}
     >
         {children}

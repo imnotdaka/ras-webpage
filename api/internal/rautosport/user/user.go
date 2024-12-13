@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -16,8 +17,8 @@ func NewRepo(db *sql.DB) Repository {
 	return Repository{DB: db}
 }
 
-func (r Repository) CreateUser(user *User) (int64, error) {
-	res, err := r.DB.Exec(database.CreateUserQuery, user.FirstName, user.LastName, user.Email, user.EncryptedPassword)
+func (r Repository) CreateUser(ctx context.Context, user *User) (int64, error) {
+	res, err := r.DB.ExecContext(ctx, database.CreateUserQuery, user.FirstName, user.LastName, user.Email, user.EncryptedPassword)
 	if err != nil {
 		return 0, err
 	}
@@ -28,8 +29,8 @@ func (r Repository) CreateUser(user *User) (int64, error) {
 	return lastID, nil
 }
 
-func (r Repository) GetUserByEmail(email string) (User, error) {
-	row := r.DB.QueryRow(database.GetUserByEmailQuery, email)
+func (r Repository) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := r.DB.QueryRowContext(ctx, database.GetUserByEmailQuery, email)
 	u := User{}
 	err := row.Scan(&u.ID, &u.EncryptedPassword)
 	if err != nil {
@@ -38,9 +39,9 @@ func (r Repository) GetUserByEmail(email string) (User, error) {
 	return u, nil
 }
 
-func (r Repository) GetUserById(id int) (User, error) {
+func (r Repository) GetUserById(ctx context.Context, id int) (User, error) {
 	fmt.Println(id)
-	row := r.DB.QueryRow(database.GetUserByIDQuery, id)
+	row := r.DB.QueryRowContext(ctx, database.GetUserByIDQuery, id)
 	u := User{}
 	err := row.Scan(&u.FirstName, &u.LastName, &u.Email)
 	if err != nil {
@@ -53,8 +54,8 @@ func (r Repository) UpdateUser() (any, error) {
 	return nil, nil
 }
 
-func (r Repository) DeleteUser(id string) (string, error) {
-	res, err := r.DB.Exec(database.DeleteUserByIDQuery, id)
+func (r Repository) DeleteUser(ctx context.Context, id string) (string, error) {
+	res, err := r.DB.ExecContext(ctx, database.DeleteUserByIDQuery, id)
 	if err != nil {
 		return "", err
 	}

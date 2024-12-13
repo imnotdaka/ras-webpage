@@ -29,8 +29,8 @@ func NewAuth(secret string) Authenticator {
 
 func (a authenticator) CreateJWT(user *user.User) (string, error) {
 	claims := &jwt.MapClaims{
-		"ExpiresAt": jwt.NewNumericDate(time.Unix(1516239022, 0)),
-		"userID":    user.ID,
+		"expires_at": jwt.NewNumericDate(time.Unix(1516239022, 0)),
+		"user_id":    user.ID,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(a.secret))
@@ -50,9 +50,5 @@ func (a authenticator) VerifyJWT(tokenString string) (*jwt.Token, error) {
 		return nil, ErrTokenIsNotValid
 	}
 
-	// claims := token.Claims.(jwt.MapClaims)
-	// if userID != int(claims["userID"].(float64)) {
-	// 	return ErrIsNotValid
-	// }
 	return token, nil
 }

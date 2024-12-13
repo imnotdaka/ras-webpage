@@ -1,13 +1,14 @@
-import { useState } from 'react'
 import { PaymentModal } from './PaymentModal'
 import { Plan } from '@/pages/MembershipPage'
+import { useAuth } from '@/context/AuthContext'
 
 interface PaymentButtonProps {
   plan: Plan
 }
 
 export function PaymentButton({ plan }: PaymentButtonProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { isModalOpen, setIsModalOpen } = useAuth()
+
 
   return (
     <>
@@ -21,7 +22,7 @@ export function PaymentButton({ plan }: PaymentButtonProps) {
         <PaymentModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
-          plan={plan} 
+          plan={plan}
         />
       )}
     </>

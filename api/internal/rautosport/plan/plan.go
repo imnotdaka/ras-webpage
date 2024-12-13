@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -13,17 +14,17 @@ type repository struct {
 }
 
 type Repository interface {
-	CreatePlanDB(string, string, int, string, float64) (int64, error)
-	GetAll() ([]PreApprovalPlan, error)
-	GetPlanById(id string) (preapproval.Request, error)
+	CreatePlanDB(ctx context.Context, id string, reason string, frequency int, frequencyType string, transactionAmount float64) (int64, error)
+	GetAllPlan(ctx context.Context) ([]PreApprovalPlan, error)
+	GetPlanById(ctx context.Context, id string) (preapproval.Request, error)
 }
 
 func NewRepo(db *sql.DB) Repository {
 	return &repository{DB: db}
 }
 
-func (r repository) CreatePlanDB(id string, reason string, frequency int, frequencyType string, transactionAmount float64) (int64, error) {
-	res, err := r.DB.Exec(database.CreatePlanQuery, id, reason, frequency, frequencyType, transactionAmount)
+func (r repository) CreatePlanDB(ctx context.Context, id string, reason string, frequency int, frequencyType string, transactionAmount float64) (int64, error) {
+	res, err := r.DB.ExecContext(ctx, database.CreatePlanQuery, id, reason, frequency, frequencyType, transactionAmount)
 	if err != nil {
 		return 0, err
 	}
@@ -34,8 +35,8 @@ func (r repository) CreatePlanDB(id string, reason string, frequency int, freque
 	return lastID, nil
 }
 
-func (r repository) GetAll() ([]PreApprovalPlan, error) {
-	rows, err := r.DB.Query(database.GetPlanQuery)
+func (r repository) GetAllPlan(ctx context.Context) ([]PreApprovalPlan, error) {
+	rows, err := r.DB.QueryContext(ctx, database.GetPlanQuery)
 	var plans []PreApprovalPlan
 	if err != nil {
 		return nil, err
@@ -52,8 +53,8 @@ func (r repository) GetAll() ([]PreApprovalPlan, error) {
 	return plans, nil
 }
 
-func (r repository) GetPlanById(id string) (preapproval.Request, error) {
-	row := r.DB.QueryRow(database.GetPlanByIdQuery, id)
+func (r repository) GetPlanById(ctx context.Context, id string) (preapproval.Request, error) {
+	row := r.DB.QueryRowContext(ctx, database.GetPlanByIdQuery, id)
 	plan := preapproval.Request{}
 	autorecurring := preapproval.AutoRecurringRequest{}
 	err := row.Scan(&plan.PreapprovalPlanID, &plan.Reason, &autorecurring.Frequency, &autorecurring.FrequencyType, &autorecurring.TransactionAmount)

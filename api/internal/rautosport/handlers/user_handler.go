@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/authenticator"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
 	"golang.org/x/crypto/bcrypt"
@@ -50,7 +49,7 @@ func CreateUserHandler(r user.Repository, auth authenticator.Authenticator) gin.
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
-		res, err := r.CreateUser(user)
+		res, err := r.CreateUser(ctx, user)
 		if err != nil {
 			fmt.Println(err)
 			ctx.JSON(http.StatusInternalServerError, err)
@@ -85,7 +84,7 @@ func GetUserByIdHandler(r user.Repository) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, ErrBadRequestParseID)
 			return
 		}
-		user, err := r.GetUserById(id)
+		user, err := r.GetUserById(ctx, id)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
@@ -100,39 +99,14 @@ func UpdateUserHandler(r user.Repository) gin.HandlerFunc {
 }
 
 func DeleteUserHandler(r user.Repository) gin.HandlerFunc {
-
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
-		deletedID, err := r.DeleteUser(id)
+		deletedID, err := r.DeleteUser(ctx, id)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
 		ctx.JSON(http.StatusOK, deletedID)
-	}
-}
-
-func JWTLogin(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		token, err := ctx.Cookie("x-jwt-token")
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, "no JWT cookie")
-			return
-		}
-		fmt.Println("token received", token)
-		parsedToken, err := auth.VerifyJWT(token)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
-		}
-
-		claims := parsedToken.Claims.(jwt.MapClaims)
-		userID := int(claims["userID"].(float64))
-		res, err := s.GetUserById(userID)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
-			return
-		}
-		ctx.JSON(http.StatusOK, res)
 	}
 }
 
@@ -144,24 +118,9 @@ func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc 
 			fmt.Println(err)
 			ctx.JSON(http.StatusInternalServerError, "err valid")
 		}
-		// tokenString, err := ctx.Cookie("x-jwt-token")
-		// if err != nil {
-		// 	fmt.Println(err, "Cookie error")
-		// 	ctx.JSON(http.StatusInternalServerError, "token not found")
-		// }
-
-		// if tokenString != "" {
-		// 	err := auth.VerifyJWT(tokenString)
-		// 	if err != nil {
-		// 		fmt.Println(err)
-		// 		ctx.JSON(http.StatusInternalServerError, "token error")
-		// 		return
-		// 	}
-		// 	ctx.JSON(http.StatusOK, err)
-		// }
 
 		email := (req.Email)
-		user, err := s.GetUserByEmail(email)
+		user, err := s.GetUserByEmail(ctx, email)
 		if err != nil {
 			fmt.Println(err)
 			ctx.JSON(http.StatusInternalServerError, err)
@@ -182,7 +141,7 @@ func Login(s user.Repository, auth authenticator.Authenticator) gin.HandlerFunc 
 
 		fmt.Println("JTW token: ", tokenString)
 		ctx.SetCookie("x-jwt-token", tokenString, 3600, "/", "localhost", false, false)
-		ctx.JSON(http.StatusOK, user.ID)
+		ctx.JSON(http.StatusOK, "OK")
 	}
 }
 
