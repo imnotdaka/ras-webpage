@@ -3,6 +3,7 @@ import { useAuth } from "./context/AuthContext"
 import LoadingPage from "./pages/LoadingPage"
 
 export default function ProtectRoute() {
+
     const { loading, isAuthenticated } = useAuth()
 
     if (loading) return <LoadingPage />

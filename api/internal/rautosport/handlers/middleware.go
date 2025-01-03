@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,13 +11,10 @@ import (
 
 func JWTMiddleware(auth authenticator.Authenticator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		tokenString, err := ctx.Cookie("x-jwt-token")
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, err)
-			ctx.Abort()
-			return
-		}
-		token, err := auth.VerifyJWT(tokenString)
+		tokenString := ctx.GetHeader("Authorization")
+		fmt.Println("tokenstring:", tokenString)
+		token, err := auth.Verify(tokenString)
+		fmt.Println("token", token)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, "Unauthorized")
 			ctx.Abort()

@@ -1,12 +1,12 @@
 import Navbar from '@/components/Navbar'
-import LoginForm from '../components/Forms/LoginForm'
+import RegisterForm from '../components/Forms/RegisterForm'
 import Footer from '@/components/Footer'
 
-export default function Login() {
+export default function Register() {
   return (
     <div>
       <Navbar />
-      <LoginForm />
+      <RegisterForm />
       <Footer />
     </div>
   )

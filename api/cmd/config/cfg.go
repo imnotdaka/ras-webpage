@@ -1,17 +1,17 @@
 package config
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	DB            DB
-	MPAccessToken string
-	JWTSecret     string
-	HTTPClient    *http.Client
+	DB                 DB
+	MPAccessToken      string
+	AccessTokenSecret  string
+	RefreshTokenSecret string
+	SecretKey          string
 }
 
 type DB struct {
@@ -36,9 +36,11 @@ func NewConfig() (*Config, error) {
 	cfg.DB.Ip = os.Getenv("IPENV")
 	cfg.DB.Port = os.Getenv("PORTENV")
 
-	cfg.JWTSecret = os.Getenv("JWT_SECRET")
-	cfg.MPAccessToken = os.Getenv("ACCESS_TOKEN")
-	cfg.HTTPClient = &http.Client{}
+	cfg.AccessTokenSecret = os.Getenv("AT_SECRET")
+	cfg.RefreshTokenSecret = os.Getenv("RT_SECRET")
+
+	cfg.MPAccessToken = os.Getenv("MP_ACCESS_TOKEN")
+	cfg.SecretKey = os.Getenv("WEBHOOK_SECRET_KEY")
 
 	return cfg, nil
 }

@@ -19,7 +19,9 @@ type User struct {
 	FirstName         string `json:"first_name"`
 	LastName          string `json:"last_name"`
 	Email             string `json:"email"`
+	Role              string `json:"role"`
 	EncryptedPassword string `json:"-"`
+	Subscribed        bool   `json:"subscribed"`
 }
 
 func NewAccount(firstName string, lastName string, email string, password string) (*User, error) {

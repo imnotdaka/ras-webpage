@@ -23,13 +23,7 @@ func CreateSubscriptionHandler(c mercadopago.Client, r plan.Repository, s subscr
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
-		plan, err := r.GetPlanById(ctx, planTemp.PreapprovalPlanID)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
-			return
-		}
 
-		planTemp.AutoRecurring = plan.AutoRecurring
 		res, err := c.CreateSubscription(ctx, planTemp)
 		if err != nil {
 			fmt.Println("uwu", err)
@@ -77,9 +71,28 @@ func GetSubscriptionHandler(c mercadopago.Client) gin.HandlerFunc {
 	}
 }
 
+func GetSubscriptionByUserIDHandler(s subscription.Repository) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID, exists := ctx.Get("user_id")
+		if !exists {
+			ctx.JSON(http.StatusBadRequest, "Bad Req")
+			return
+		}
+		userIDInt := userID.(int)
+
+		res, err := s.GetSubscriptionByUserID(ctx, userIDInt)
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, res)
+	}
+}
+
 func UpdateMPSubscriptionHandler(c mercadopago.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req subscription.UpdateReq
+		var req mercadopago.UpdateReq
 
 		err := ctx.ShouldBindJSON(&req)
 		if err != nil {
@@ -96,5 +109,28 @@ func UpdateMPSubscriptionHandler(c mercadopago.Client) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
+	}
+}
+
+func CancelMPSubscriptionHandler(c mercadopago.Client, s subscription.Repository) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id, exists := ctx.Get("user_id")
+		if !exists {
+			ctx.JSON(http.StatusUnauthorized, "unauth")
+			return
+		}
+		sub, err := s.GetSubscriptionByUserID(ctx, id.(int))
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+		err = c.UpdateSubscription(ctx, sub.ID, mercadopago.Cancelled)
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+		ctx.JSON(http.StatusOK, "Subscription cancelled")
 	}
 }

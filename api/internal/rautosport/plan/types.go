@@ -1,12 +1,12 @@
 package plan
 
 type AutoRecurring struct {
-	Frequency              int    `json:"frequency"`
-	FrequencyType          string `json:"frequency_type"`
-	BillingDay             int    `json:"billing_day"`
-	BillingDayProportional bool   `json:"billing_day_proportional"`
-	TransactionAmount      int    `json:"transaction_amount"`
-	CurrencyID             string `json:"currency_id"`
+	Frequency              int     `json:"frequency"`
+	FrequencyType          string  `json:"frequency_type"`
+	BillingDay             int     `json:"billing_day"`
+	BillingDayProportional bool    `json:"billing_day_proportional"`
+	TransactionAmount      float64 `json:"transaction_amount"`
+	CurrencyID             string  `json:"currency_id"`
 }
 
 type PaymentMethodsAllowed struct {

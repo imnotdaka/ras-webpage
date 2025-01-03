@@ -23,16 +23,28 @@ type PreApprovalPlan struct {
 	BackURL               string                `json:"back_url"`
 }
 
-type Data struct {
-	Id string `json:"id"`
+type UpdateReq struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
 }
 
-type RequestBody struct {
+type Data struct {
+	ID string `json:"id"`
+}
+
+type RequestBodyWebhook struct {
 	Action        string    `json:"action"`
-	ApplicationID string    `json:"application_id"`
+	ApplicationID int       `json:"application_id"`
 	Data          Data      `json:"data"`
 	Date          time.Time `json:"date"`
 	Entity        string    `json:"entity"`
-	Id            string    `json:"id"`
+	ID            int       `json:"id"`
 	Type          string    `json:"type"`
 }
+
+var (
+	SubscriptionPreapproval = "subscription_preapproval"
+	PlanPreapproval         = "subscription_preapproval_plan"
+	Updated                 = "updated"
+	Cancelled               = "cancelled"
+)

@@ -1,6 +1,4 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-// import { Input } from '@/components/ui/input'
-// import { Label } from '@/components/ui/label'
 import { Plan } from '@/pages/MembershipPage'
 import Checkout from '../Checkout/Checkout'
 
@@ -15,7 +13,7 @@ export function PaymentModal({ isOpen, onClose, plan }: PaymentModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <Checkout plan={plan}/>
+        <Checkout plan={plan} />
       </DialogContent>
     </Dialog>
   )

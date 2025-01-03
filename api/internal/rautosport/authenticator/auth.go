@@ -1,11 +1,20 @@
 package authenticator
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/session"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/user"
+)
+
+var (
+	ExpirationTimeAT = time.Minute * 15
+	ExpirationTimeRT = time.Hour * 1
 )
 
 var (
@@ -14,34 +23,73 @@ var (
 	ErrTokenIsNotValid      = errors.New("token not valid")
 )
 
+type Tokens struct {
+	AccessToken  string
+	RefreshToken string
+}
+
 type Authenticator interface {
-	CreateJWT(user *user.User) (string, error)
-	VerifyJWT(tokenString string) (*jwt.Token, error)
+	Create(user *user.User) (Tokens, error)
+	Verify(tokenString string) (*jwt.Token, error)
+	Refresh(ctx context.Context, token string) (string, error)
 }
 
 type authenticator struct {
-	secret string
+	session  session.Repository
+	atSecret string
+	rtSecret string
 }
 
-func NewAuth(secret string) Authenticator {
-	return &authenticator{secret: secret}
-}
-
-func (a authenticator) CreateJWT(user *user.User) (string, error) {
-	claims := &jwt.MapClaims{
-		"expires_at": jwt.NewNumericDate(time.Unix(1516239022, 0)),
-		"user_id":    user.ID,
+func NewAuth(atSecret, rtSecret string, repo session.Repository) *authenticator {
+	return &authenticator{
+		atSecret: atSecret,
+		rtSecret: rtSecret,
+		session:  repo,
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(a.secret))
 }
 
-func (a authenticator) VerifyJWT(tokenString string) (*jwt.Token, error) {
+func (a authenticator) Create(user *user.User) (Tokens, error) {
+	atClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Unix() + int64(ExpirationTimeAT.Seconds()),
+	})
+	AccessToken, err := atClaims.SignedString([]byte(a.atSecret))
+	if err != nil {
+		return Tokens{}, err
+	}
+
+	rtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Unix() + int64(ExpirationTimeRT.Seconds()),
+		"iat":     time.Now().Unix(),
+	})
+
+	refreshToken, err := rtClaims.SignedString([]byte(a.rtSecret))
+	if err != nil {
+		return Tokens{}, err
+	}
+
+	err = a.session.Create(session.Session{
+		Token:  refreshToken,
+		UserID: user.ID,
+	})
+	if err != nil {
+		fmt.Println("session create error", err)
+		return Tokens{}, err
+	}
+
+	return Tokens{
+		AccessToken:  AccessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (a authenticator) Verify(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidSigningMethod
 		}
-		return []byte(a.secret), nil
+		return []byte(a.atSecret), nil
 	})
 	if err != nil {
 		return nil, err
@@ -49,6 +97,46 @@ func (a authenticator) VerifyJWT(tokenString string) (*jwt.Token, error) {
 	if !token.Valid {
 		return nil, ErrTokenIsNotValid
 	}
-
 	return token, nil
+}
+
+func (a authenticator) Refresh(ctx context.Context, token string) (string, error) {
+	fmt.Println(token)
+
+	s, err := a.session.Get(ctx, token)
+	if err != nil {
+		fmt.Println("Session get in refresh", err)
+		return "", err
+	}
+	if !s.IsValid {
+		fmt.Println("Session not valid")
+		return "", ErrIsNotValid
+	}
+
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			fmt.Println("error parse")
+			return nil, http.ErrAbortHandler
+		}
+		return []byte(a.rtSecret), nil
+	})
+	// Check if token is valid
+	if err != nil || !t.Valid {
+		fmt.Println(t.Valid)
+		return "", errors.New("Unauthorized")
+	}
+	claims := t.Claims.(jwt.MapClaims)
+
+	atClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": claims["user_id"],
+		"exp":     time.Now().Unix() + int64(ExpirationTimeAT.Seconds()),
+	})
+
+	accessToken, err := atClaims.SignedString([]byte(a.atSecret))
+	if err != nil {
+		fmt.Println("signedstring", err)
+		return "", err
+	}
+
+	return accessToken, nil
 }

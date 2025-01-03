@@ -43,7 +43,7 @@ func (r Repository) GetUserById(ctx context.Context, id int) (User, error) {
 	fmt.Println(id)
 	row := r.DB.QueryRowContext(ctx, database.GetUserByIDQuery, id)
 	u := User{}
-	err := row.Scan(&u.FirstName, &u.LastName, &u.Email)
+	err := row.Scan(&u.FirstName, &u.LastName, &u.Email, &u.Subscribed)
 	if err != nil {
 		return u, err
 	}

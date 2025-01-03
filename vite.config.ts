@@ -10,4 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./frontend"),
     },
   },
+  // server:{
+  //   port:5174
+  // }
 })

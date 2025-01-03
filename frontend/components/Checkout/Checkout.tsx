@@ -3,7 +3,6 @@ import axios from '../../context/axios';
 import { Plan } from '@/pages/MembershipPage'
 import { useRef, useState } from 'react';
 import { SubscriptionProps, SubscriptionStatus } from './StatusCard'
-// import axios from "../../context/axios";
 
 interface CheckPrep {
     plan: Plan
@@ -45,15 +44,12 @@ function Checkout({ plan }: CheckPrep) {
                 initialization={{ amount: 20 }}
                 locale='es-AR'
                 onSubmit={async (cardFormData) => {
-                    console.log(cardFormData)
-
                     const reqData: Request = {
                         card_token_id: cardFormData.token,
                         preapproval_plan_id: plan.id,
                         payer_email: cardFormData.payer.email,
                         reason: plan.reason,
                     }
-                    console.log(reqData)
                     axios.post<SubscriptionProps>('create_suscription',
                         { ...reqData },
 
@@ -64,10 +60,8 @@ function Checkout({ plan }: CheckPrep) {
                         })
                         .then((res) => {
                             window.cardPaymentBrickController.unmount()
-                            // setIsModalOpen(false)
                             setData(res.data)
                             setIsPaymentSuccessful(true)
-                            console.log("res.data sub:", res.data)
                         })
                         .catch((error) => {
                             console.log(error)

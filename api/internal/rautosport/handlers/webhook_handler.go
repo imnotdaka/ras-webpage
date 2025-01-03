@@ -7,24 +7,24 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/imnotdaka/RAS-webpage/cmd/config"
 	"github.com/imnotdaka/RAS-webpage/internal/clients/mercadopago"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/plan"
+	"github.com/imnotdaka/RAS-webpage/internal/rautosport/subscription"
 )
 
-func Webhook(c mercadopago.Client) gin.HandlerFunc {
+func WebhookHandler(c mercadopago.Client, s subscription.Repository, p plan.Repository, cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		err := SecretKeyValidate(ctx)
+		err := SecretKeyValidate(ctx, cfg)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, err)
 			return
 		}
-		var req struct {
-			Data map[string]string `json:"data"`
-		}
+		var req mercadopago.RequestBodyWebhook
 
 		err = ctx.ShouldBindJSON(&req)
 		if err != nil {
@@ -32,13 +32,59 @@ func Webhook(c mercadopago.Client) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
-		fmt.Printf("%+v\n", req)
-		res, _ := c.GetSubscriptionById(ctx, req.Data["id"])
-		fmt.Printf("%+v", res)
+		fmt.Println("req", req)
+		if req.Type == mercadopago.SubscriptionPreapproval {
+			fmt.Println("processing subscription")
+
+			switch req.Action {
+			case mercadopago.Updated:
+				res, err := c.GetSubscriptionById(ctx, req.Data.ID)
+				if err != nil {
+					fmt.Println(err)
+					ctx.JSON(http.StatusInternalServerError, err)
+					return
+				}
+				err = s.UpdateSubscription(ctx, subscription.UpdateReq{
+					NextPaymentDate: res.NextPaymentDate,
+					Status:          res.Status,
+					SubscriptionID:  res.ID,
+				})
+				if err != nil {
+					fmt.Println(err)
+					ctx.JSON(http.StatusInternalServerError, err)
+					return
+				}
+			}
+		}
+		if req.Type == mercadopago.PlanPreapproval {
+			fmt.Println("processing preapprovalplan")
+			switch req.Action {
+			case mercadopago.Updated:
+				res, err := c.GetPlan(ctx, req.Data.ID)
+				if err != nil {
+					fmt.Println(err)
+					ctx.JSON(http.StatusInternalServerError, err)
+					return
+				}
+				err = p.UpdatePlan(ctx, &plan.PreApprovalPlan{
+					ID:     res.ID,
+					Reason: res.Reason,
+					AutoRecurring: plan.AutoRecurring{
+						TransactionAmount: res.AutoRecurring.TransactionAmount,
+					},
+				})
+				if err != nil {
+					fmt.Println(err)
+					ctx.JSON(http.StatusInternalServerError, err)
+					return
+				}
+			}
+
+		}
 	}
 }
 
-func SecretKeyValidate(ctx *gin.Context) error {
+func SecretKeyValidate(ctx *gin.Context, cfg *config.Config) error {
 	xSignature := ctx.GetHeader("x-signature")
 	xRequestId := ctx.GetHeader("x-request-id")
 
@@ -62,7 +108,7 @@ func SecretKeyValidate(ctx *gin.Context) error {
 			}
 		}
 	}
-	secret := os.Getenv("SECRET")
+	secret := cfg.SecretKey
 
 	manifest := fmt.Sprintf("id:%v;request-id:%v;ts:%v;", dataID, xRequestId, ts)
 

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 
 type SubscriptionStatus = 'authorized' | 'cancelled' | 'pending'
 
@@ -12,13 +13,15 @@ interface SubProps {
 
 export type SubscriptionProps = {
     status: SubscriptionStatus
-    date_created: string
     reason: string
+    date_created: string
     transaction_amount: number
 }
 
 export function SubscriptionStatus({ props }: SubProps) {
     const [showStatus, setShowStatus] = useState(false)
+
+    const parsedDateCreated = dayjs(props?.date_created);
 
     useEffect(() => {
         if (props != undefined) {
@@ -26,36 +29,6 @@ export function SubscriptionStatus({ props }: SubProps) {
             console.log("Props not undefined", props)
         }
     }, [props])
-
-    // const fetchSubscriptionStatus = async (): Promise<{
-    //     status: SubscriptionStatus
-    //     reason: string
-    //     auto_recurring: AutoRecurring
-    //     date_created: string
-    // }> => {
-    //     if (!subscription_id) {
-    //         throw new Error('Subscription ID is undefined')
-    //     }
-    //     const res = await axios.get(`/suscription_status/${subscription_id}`)
-    //     if (res.status !== 200) {
-    //         throw new Error('Error al obtener el estado de la suscripción')
-    //     }
-    //     return res.data
-    // }
-
-    // const { data, isLoading, isError, error, refetch } = useQuery({
-    //     queryKey: ['subscriptionStatus', subscription_id],
-    //     queryFn: fetchSubscriptionStatus,
-    //     enabled: false,
-    // })
-
-    // useEffect(() => {
-    //     if (subscription_id) {
-    //         refetch()
-    //         setShowStatus(true)
-    //         console.log(data)
-    //     }
-    // }, [subscription_id, refetch])
 
     const handleCloseStatus = () => {
         setShowStatus(false)
@@ -83,7 +56,7 @@ export function SubscriptionStatus({ props }: SubProps) {
                                     status={props.status}
                                     reason={props.reason}
                                     amount={props.transaction_amount.toString()}
-                                    date={props.date_created}
+                                    date={parsedDateCreated.format('DD/MM/YYYY')}
                                     onClose={handleCloseStatus}
                                 />
                             ) : null}

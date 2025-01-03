@@ -18,6 +18,7 @@ type client struct {
 
 type Client interface {
 	CreatePlan(context.Context, preapprovalplan.Request) (string, error)
+	GetPlan(ctx context.Context, id string) (*preapprovalplan.Response, error)
 	CreateSubscription(ctx context.Context, req preapproval.Request) (*preapproval.Response, error)
 	GetSubscriptionById(ctx context.Context, id string) (*preapproval.Response, error)
 	UpdateSubscription(ctx context.Context, id string, status string) error
@@ -37,6 +38,14 @@ func (c client) CreatePlan(ctx context.Context, req preapprovalplan.Request) (st
 	}
 
 	return res.ID, nil
+}
+
+func (c client) GetPlan(ctx context.Context, id string) (*preapprovalplan.Response, error) {
+	res, err := c.pap.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (c client) CreateSubscription(ctx context.Context, req preapproval.Request) (*preapproval.Response, error) {
