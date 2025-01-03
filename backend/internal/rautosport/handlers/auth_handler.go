@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ func RefreshHandler(a authenticator.Authenticator) gin.HandlerFunc {
 
 		accessToken, err := a.Refresh(ctx, token)
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("Error refreshing token", "error", err)
 			ctx.JSON(http.StatusInternalServerError, "internal server error")
 			return
 		}
@@ -46,25 +46,25 @@ func AuthMeHandler(u user.Repository, a authenticator.Authenticator) gin.Handler
 
 		signedToken, err := a.Refresh(ctx, token)
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("error refreshing token", "error", err)
 			ctx.JSON(http.StatusUnauthorized, "unauth")
 			return
 		}
 
 		accessToken, err := a.Verify(signedToken)
 		if err != nil {
+			slog.Error("error verifying token", "error", err)
 			ctx.JSON(http.StatusUnauthorized, "unauth")
 			return
 		}
 
 		user, err := u.GetUserById(ctx, int(accessToken.Claims.(jwt.MapClaims)["user_id"].(float64)))
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("error getting user", "error", err)
 			ctx.JSON(http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		fmt.Println(user)
 		ctx.JSON(http.StatusOK, authMeRes{
 			User:  user,
 			Token: signedToken,

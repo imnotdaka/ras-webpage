@@ -29,6 +29,7 @@ func NewAccount(firstName string, lastName string, email string, password string
 	if err != nil {
 		return nil, err
 	}
+
 	return &User{
 		FirstName:         firstName,
 		LastName:          lastName,

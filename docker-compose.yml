@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  db:
+    restart: unless-stopped
+    image: mysql:8.0
+    container_name: mysql-container-rasdb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: rasdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-ras:/var/lib/mysql
+
+  prometheus:
+    image: prom/prometheus:v2.40.4
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:9.3.0
+    ports:
+      - 3100:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${PROMETHEUS_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${PROMETHEUS_PASSWORD}
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-ras:/var/lib/grafana
+
+volumes:
+  mysql-ras:
+  grafana-ras:

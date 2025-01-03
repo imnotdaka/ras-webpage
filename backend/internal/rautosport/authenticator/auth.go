@@ -3,7 +3,7 @@ package authenticator
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -74,7 +74,7 @@ func (a authenticator) Create(user *user.User) (Tokens, error) {
 		UserID: user.ID,
 	})
 	if err != nil {
-		fmt.Println("session create error", err)
+		slog.Error("session create error", "error", err)
 		return Tokens{}, err
 	}
 
@@ -101,28 +101,25 @@ func (a authenticator) Verify(tokenString string) (*jwt.Token, error) {
 }
 
 func (a authenticator) Refresh(ctx context.Context, token string) (string, error) {
-	fmt.Println(token)
-
 	s, err := a.session.Get(ctx, token)
 	if err != nil {
-		fmt.Println("Session get in refresh", err)
+		slog.Error("Session get in refresh", "error", err)
 		return "", err
 	}
 	if !s.IsValid {
-		fmt.Println("Session not valid")
+		slog.Error("Session not valid")
 		return "", ErrIsNotValid
 	}
 
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			fmt.Println("error parse")
+			slog.Error("Error parsing JWT")
 			return nil, http.ErrAbortHandler
 		}
 		return []byte(a.rtSecret), nil
 	})
-	// Check if token is valid
+
 	if err != nil || !t.Valid {
-		fmt.Println(t.Valid)
 		return "", errors.New("Unauthorized")
 	}
 	claims := t.Claims.(jwt.MapClaims)
@@ -134,7 +131,7 @@ func (a authenticator) Refresh(ctx context.Context, token string) (string, error
 
 	accessToken, err := atClaims.SignedString([]byte(a.atSecret))
 	if err != nil {
-		fmt.Println("signedstring", err)
+		slog.Error("signedstring", "error", err)
 		return "", err
 	}
 

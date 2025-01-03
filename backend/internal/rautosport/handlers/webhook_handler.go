@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imnotdaka/RAS-webpage/cmd/config"
+	"github.com/imnotdaka/RAS-webpage/cmd/server/config"
 	"github.com/imnotdaka/RAS-webpage/internal/clients/mercadopago"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/plan"
 	"github.com/imnotdaka/RAS-webpage/internal/rautosport/subscription"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/imnotdaka/RAS-webpage/cmd/config"
+	"github.com/imnotdaka/RAS-webpage/cmd/server/config"
 )
 
 func NewDB(dbcfg config.DB) (*sql.DB, error) {
